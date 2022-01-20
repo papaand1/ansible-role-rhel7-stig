@@ -1,0 +1,89 @@
+- name: 'Set fact: Package manager reinstall command (dnf)'
+ - name: Make sure Ciphers is not in the /etc/ssh/sshd_config configuration
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    state: absent
+    regexp: '^%Ciphers'
+    
+ - name: Make sure MACs is not in the /etc/ssh/sshd_config configuration
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    state: absent
+    regexp: '^%MACs'    
+    
+ - name: Configure sshd to use approved ciphers
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: 'Ciphers aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes128-ctr'
+    state: present
+    create: true
+  when:
+  - low_complexity | bool
+  - low_disruption | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - sshd_use_approved_ciphers_ordered_stig | bool
+  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - CCE-83398-8
+  - DISA-STIG-RHEL-07-040110
+  - low_complexity
+  - low_disruption
+  - medium_severity
+  - no_reboot_needed
+  - restrict_strategy
+  - sshd_use_approved_ciphers_ordered_stig
+
+- name: Configure sshd to use approved MACs
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: 'MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,hmac-ripemd160,hmac-sha1,umac-64@openssh.com'
+    state: present
+    create: true
+  when:
+  - low_complexity | bool
+  - low_disruption | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - sshd_use_approved_macs_ordered_stig | bool
+  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - CCE-83636-1
+  - DISA-STIG-RHEL-07-040400
+  - low_complexity
+  - low_disruption
+  - medium_severity
+  - no_reboot_needed
+  - restrict_strategy
+  - sshd_use_approved_macs_ordered_stig
+  
+- name: Configure sshd to use approved KexAlgorithms
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: 'KexAlgorithms  diffie-hellman-group-exchange-sha256,diffie-hellman-group14-sha1'
+    state: present
+    create: true
+  when:
+  - low_complexity | bool
+  - low_disruption | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - sshd_use_approved_macs_ordered_stig | bool
+  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  tags:
+  - CCE-83636-1
+  - DISA-STIG-RHEL-07-040400
+  - low_complexity
+  - low_disruption
+  - medium_severity
+  - no_reboot_needed
+  - restrict_strategy
+  - sshd_use_approved_macs_ordered_stig  
+
+- name: Restart service sshd, in all cases
+  ansible.builtin.service:
+    name: sshd
+    state: restarted
