@@ -1,4 +1,3 @@
-- name: 'Set fact: Package manager reinstall command (dnf)'
  - name: Make sure Ciphers is not in the /etc/ssh/sshd_config configuration
   ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
